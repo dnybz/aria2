@@ -87,7 +87,7 @@ namespace {
 Platform* platform = nullptr;
 } // namespace
 
-int libraryInit()
+EXTERN_C int libraryInit()
 {
   global::initConsole(true);
   try {
@@ -101,7 +101,7 @@ int libraryInit()
   return 0;
 }
 
-int libraryDeinit()
+EXTERN_C int libraryDeinit()
 {
   delete platform;
   return 0;
@@ -144,20 +144,42 @@ Session* sessionNew(const KeyVals& options, const SessionConfig& config)
   return session.release();
 }
 
-int sessionFinal(Session* session)
+EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, 
+                              bool useSignalHandler, DownloadEventCallback downloadEventCallback, 
+                              void* userData)
+{
+    SessionConfig config;
+    config.keepRunning = keepRunning;
+    config.useSignalHandler = useSignalHandler;
+    config.downloadEventCallback = downloadEventCallback;
+    config.userData = userData;
+
+    KeyVals vals;
+    for (uint32_t i = 0; i < optionCount; ++i)  {
+      std::string opt = options[i];
+      size_t npos = opt.find(":");
+      std::string key = util::strip(opt.substr(0, npos));
+      std::string val = util::strip(opt.substr(npos + 1, opt.size()));
+      vals.push_back(KeyVals::value_type(key, val));
+    }
+
+    return sessionNew(vals, config);
+}
+
+EXTERN_C int sessionFinal(Session* session)
 {
   error_code::Value rv = session->context->reqinfo->getResult();
   delete session;
   return rv;
 }
 
-int run(Session* session, RUN_MODE mode)
+EXTERN_C int run(Session* session, RUN_MODE mode)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   return e->run(mode == RUN_ONCE);
 }
 
-int shutdown(Session* session, bool force)
+EXTERN_C int shutdown(Session* session, bool force)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   if (force) {
@@ -174,6 +196,14 @@ int shutdown(Session* session, bool force)
 
 std::string gidToHex(A2Gid gid) { return GroupId::toHex(gid); }
 
+EXTERN_C void gidToHex(A2Gid gid, char* hex)
+{
+  std::string str = GroupId::toHex(gid);
+  if(hex && !str.empty()) {
+    strncpy(hex, str.c_str(), str.size());
+  }
+}
+
 A2Gid hexToGid(const std::string& hex)
 {
   A2Gid gid;
@@ -185,7 +215,12 @@ A2Gid hexToGid(const std::string& hex)
   }
 }
 
-bool isNull(A2Gid gid) { return gid == 0; }
+EXTERN_C A2Gid hexToGid(const char* hex)
+{
+  return(hexToGid(hex));
+}
+
+EXTERN_C bool isNull(A2Gid gid) { return gid == 0; }
 
 namespace {
 template <typename InputIterator, typename Pred>
@@ -288,6 +323,25 @@ int addUri(Session* session, A2Gid* gid, const std::vector<std::string>& uris,
   return 0;
 }
 
+EXTERN_C int addUri(Session* session, A2Gid* gid, const char** uris, int uriCount, const char** options, int optionCount, int position)
+{
+    std::vector<std::string> uriList;
+    for (uint32_t i = 0; i < uriCount; ++i) {
+        uriList.push_back(uris[i]);
+    }
+
+    KeyVals vals;
+    for (uint32_t i = 0; i < optionCount; ++i) {
+      std::string opt = options[i];
+      size_t npos = opt.find(":");
+      std::string key = util::strip(opt.substr(0, npos));
+      std::string val = util::strip(opt.substr(npos + 1, opt.size()));
+      vals.push_back(KeyVals::value_type(key, val));
+    }
+
+    return addUri(session, gid, uriList, vals, position);
+}
+
 int addMetalink(Session* session, std::vector<A2Gid>* gids,
                 const std::string& metalinkFile, const KeyVals& options,
                 int position)
@@ -359,6 +413,27 @@ int addTorrent(Session* session, A2Gid* gid, const std::string& torrentFile,
 #endif // !ENABLE_BITTORRENT
 }
 
+EXTERN_C int addTorrent(Session* session, A2Gid* gid, const char* torrentFile,
+               const char** webSeedUris, int webSeedUrisCount,
+               const char** options, int optionCount, int position)
+{
+    KeyVals vals;
+    for (uint32_t i = 0; i < optionCount; ++i) {
+      std::string opt = options[i];
+      size_t npos = opt.find(":");
+      std::string key = util::strip(opt.substr(0, npos));
+      std::string val = util::strip(opt.substr(npos + 1, opt.size()));
+      vals.push_back(KeyVals::value_type(key, val));
+    }
+
+    std::vector<std::string> uris;
+    for (uint32_t i = 0; i < webSeedUrisCount; ++i) {
+      uris.push_back(webSeedUris[i]);
+    }
+  
+    return addTorrent(session, gid, torrentFile, uris, vals, position);
+}
+
 int addTorrent(Session* session, A2Gid* gid, const std::string& torrentFile,
                const KeyVals& options, int position)
 {
@@ -366,7 +441,7 @@ int addTorrent(Session* session, A2Gid* gid, const std::string& torrentFile,
                     options, position);
 }
 
-int removeDownload(Session* session, A2Gid gid, bool force)
+EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   std::shared_ptr<RequestGroup> group = e->getRequestGroupMan()->findGroup(gid);
@@ -395,7 +470,7 @@ int removeDownload(Session* session, A2Gid gid, bool force)
   return 0;
 }
 
-int pauseDownload(Session* session, A2Gid gid, bool force)
+EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   std::shared_ptr<RequestGroup> group = e->getRequestGroupMan()->findGroup(gid);
@@ -409,7 +484,7 @@ int pauseDownload(Session* session, A2Gid gid, bool force)
   return -1;
 }
 
-int unpauseDownload(Session* session, A2Gid gid)
+EXTERN_C int unpauseDownload(Session* session, A2Gid gid)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   std::shared_ptr<RequestGroup> group = e->getRequestGroupMan()->findGroup(gid);
@@ -424,7 +499,7 @@ int unpauseDownload(Session* session, A2Gid gid)
   return 0;
 }
 
-int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how)
+EXTERN_C int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
   try {
@@ -464,6 +539,20 @@ int changeOption(Session* session, A2Gid gid, const KeyVals& options)
   }
 }
 
+EXTERN_C int changeOption(Session* session, A2Gid gid, const char** options, int optionCount)
+{
+  KeyVals vals;
+  for(uint32_t i = 0; i < optionCount; i++) {
+    std::string opt = options[i];
+    size_t npos = opt.find(":");
+    std::string key = util::strip(opt.substr(0, npos));
+    std::string val = util::strip(opt.substr(npos + 1, opt.size()));
+    vals.push_back(KeyVals::value_type(key, val));
+  }
+
+  return changeOption(session, gid, vals);
+}
+
 const std::string& getGlobalOption(Session* session, const std::string& name)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
@@ -474,6 +563,20 @@ const std::string& getGlobalOption(Session* session, const std::string& name)
   else {
     return A2STR::NIL;
   }
+}
+
+EXTERN_C int getGlobalOption(Session* session, const char* name, char* options, int optionSize)
+{
+  std::string opt = getGlobalOption(session, name);
+  if(nullptr == options || !optionSize) {
+    return opt.size();
+  }
+
+  if(!opt.empty()) {
+    strncpy(options, opt.c_str(), optionSize);
+  }
+
+  return opt.size();
 }
 
 KeyVals getGlobalOptions(Session* session)
@@ -492,6 +595,29 @@ KeyVals getGlobalOptions(Session* session)
   return options;
 }
 
+EXTERN_C int getGlobalOptions(Session* session, char *options, int optionSize)
+{
+  KeyVals vals = getGlobalOptions(session);
+  std::string opt;
+  for(auto &it: vals) {
+    opt.append(it.first);
+    opt.append(":");
+    opt.append(it.second);
+    opt.append("\n");
+  }
+  opt = util::strip(opt);
+
+  if(nullptr == options || !optionSize) {
+    return opt.size();
+  }
+
+  if(!opt.empty()) {
+    strncpy(options, opt.c_str(), optionSize);
+  }
+
+  return opt.size();
+}
+
 int changeGlobalOption(Session* session, const KeyVals& options)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
@@ -508,6 +634,20 @@ int changeGlobalOption(Session* session, const KeyVals& options)
   return 0;
 }
 
+EXTERN_C int changeGlobalOption(Session* session, const char** options, int optionCount)
+{
+    KeyVals vals;
+    for (uint32_t i = 0; i < optionCount; ++i) {
+      std::string opt = options[i];
+      size_t npos = opt.find(":");
+      std::string key = util::strip(opt.substr(0, npos));
+      std::string val = util::strip(opt.substr(npos + 1, opt.size()));
+      vals.push_back(KeyVals::value_type(key, val));
+    }
+
+    return changeGlobalOption(session, vals);
+}
+
 GlobalStat getGlobalStat(Session* session)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
@@ -522,6 +662,12 @@ GlobalStat getGlobalStat(Session* session)
   return res;
 }
 
+EXTERN_C void getGlobalStat(Session* session, GlobalStat *stat)
+{
+  GlobalStat globalStat = getGlobalStat(session);
+  *stat = globalStat;
+}
+
 std::vector<A2Gid> getActiveDownload(Session* session)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
@@ -531,6 +677,19 @@ std::vector<A2Gid> getActiveDownload(Session* session)
     res.push_back(group->getGID());
   }
   return res;
+}
+
+EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count)
+{
+  std::vector<A2Gid> actives = getActiveDownload(session);
+  if(nullptr == gids || !count) {
+    return actives.size();
+  }
+  for(uint32_t i = 0; i < count && i < actives.size() ; i++) {
+    gids[i] = actives[i];
+  }
+
+  return actives.size();
 }
 
 namespace {
@@ -885,5 +1044,119 @@ DownloadHandle* getDownloadHandle(Session* session, A2Gid gid)
 }
 
 void deleteDownloadHandle(DownloadHandle* dh) { delete dh; }
+
+EXTERN_C DownloadStatus getDownloadStatus(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  DownloadStatus status = dlhandle ? dlhandle->getStatus() : DownloadStatus::DOWNLOAD_REMOVED;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+
+  return status;
+}
+
+EXTERN_C int64_t getTotalLength(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int64_t totalLength = dlhandle ? dlhandle->getTotalLength() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return totalLength;
+}
+
+EXTERN_C int64_t getCompletedLength(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int64_t completedLength = dlhandle ? dlhandle->getCompletedLength() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return completedLength;
+}
+
+EXTERN_C int getUploadSpeed(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int uploadSpeed = dlhandle ? dlhandle->getUploadSpeed() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return uploadSpeed;
+}
+
+EXTERN_C size_t getPieceLength(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  size_t pieceLength = dlhandle ? dlhandle->getPieceLength() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return pieceLength;
+}
+
+EXTERN_C int getNumPieces(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  size_t numPieces = dlhandle ? dlhandle->getNumPieces() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return numPieces;
+}
+
+EXTERN_C int getConnections(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int connections = dlhandle ? dlhandle->getConnections() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return connections;
+}
+
+EXTERN_C int getErrorCode(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  size_t errorCode = dlhandle ? dlhandle->getErrorCode() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return errorCode;
+}
+
+EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int downloadSpeed = dlhandle ? dlhandle->getDownloadSpeed() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return downloadSpeed;
+}
+
+EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  std::string dir = dlhandle ? dlhandle->getDir() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+
+  if(saveDir && !dir.empty()) {
+    strncpy(saveDir, dir.c_str(), dir.size());
+  }
+}
+
+EXTERN_C int getNumFiles(Session* session, A2Gid gid)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  int numFiles = dlhandle ? dlhandle->getNumFiles() : 0;
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+  return numFiles;
+}
 
 } // namespace aria2

@@ -42,6 +42,12 @@
 #include <string>
 #include <vector>
 
+#ifdef __cplusplus
+#define EXTERN_C                       extern "C"
+#else
+#define EXTERN_C                       extern
+#endif
+
 // Libaria2: The aim of this library is provide same functionality
 // available in RPC methods. The function signatures are not
 // necessarily the same, because we can take advantage of the direct,
@@ -71,7 +77,7 @@ struct Session;
  * Call this function only once before calling any other API
  * functions.
  */
-int libraryInit();
+EXTERN_C int libraryInit();
 
 /**
  * @function
@@ -81,7 +87,7 @@ int libraryInit();
  *
  * Call this function only once at the end of the application.
  */
-int libraryDeinit();
+EXTERN_C int libraryDeinit();
 
 /**
  * @typedef
@@ -207,6 +213,11 @@ struct SessionConfig {
  */
 Session* sessionNew(const KeyVals& options, const SessionConfig& config);
 
+
+EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, 
+                              bool useSignalHandler, DownloadEventCallback downloadEventCallback, 
+                              void* userData);
+
 /**
  * @function
  *
@@ -215,7 +226,7 @@ Session* sessionNew(const KeyVals& options, const SessionConfig& config);
  * for it. This function returns the last error code and it is the
  * equivalent to the :ref:`exit-status` of :manpage:`aria2c(1)`.
  */
-int sessionFinal(Session* session);
+EXTERN_C int sessionFinal(Session* session);
 
 /**
  * @enum
@@ -250,7 +261,7 @@ enum RUN_MODE {
  *
  * In either case, this function returns negative error code on error.
  */
-int run(Session* session, RUN_MODE mode);
+EXTERN_C int run(Session* session, RUN_MODE mode);
 
 /**
  * @function
@@ -259,6 +270,8 @@ int run(Session* session, RUN_MODE mode);
  */
 std::string gidToHex(A2Gid gid);
 
+EXTERN_C void gidToHex(A2Gid gid, char* hex);
+
 /**
  * @function
  *
@@ -266,12 +279,14 @@ std::string gidToHex(A2Gid gid);
  */
 A2Gid hexToGid(const std::string& hex);
 
+EXTERN_C A2Gid hexToGid(const char* hex);
+
 /**
  * @function
  *
  * Returns true if the |gid| is invalid.
  */
-bool isNull(A2Gid gid);
+EXTERN_C bool isNull(A2Gid gid);
 
 /**
  * @function
@@ -294,6 +309,9 @@ bool isNull(A2Gid gid);
 int addUri(Session* session, A2Gid* gid, const std::vector<std::string>& uris,
            const KeyVals& options, int position = -1);
 
+
+EXTERN_C int addUri(Session* session, A2Gid* gid, const char** uris, int uriCount, const char** options, int optionCount, int position = -1);
+ 
 /**
  * @function
  *
@@ -338,6 +356,9 @@ int addTorrent(Session* session, A2Gid* gid, const std::string& torrentFile,
                const std::vector<std::string>& webSeedUris,
                const KeyVals& options, int position = -1);
 
+EXTERN_C int addTorrent(Session* session, A2Gid* gid, const char* torrentFile,
+               const char** webSeedUris, int webSeedUrisCount,
+               const char** options, int optionCount, int position = -1);
 /**
  * @function
  *
@@ -354,6 +375,8 @@ int addTorrent(Session* session, A2Gid* gid, const std::string& torrentFile,
  */
 std::vector<A2Gid> getActiveDownload(Session* session);
 
+EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count);
+
 /**
  * @function
  *
@@ -364,7 +387,7 @@ std::vector<A2Gid> getActiveDownload(Session* session);
  * takes time such as contacting BitTorrent tracker. This function
  * returns 0 if it succeeds, or negative error code.
  */
-int removeDownload(Session* session, A2Gid gid, bool force = false);
+EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force = false);
 
 /**
  * @function
@@ -384,7 +407,7 @@ int removeDownload(Session* session, A2Gid gid, bool force = false);
  * :member:`SessionConfig::keepRunning` to true. Otherwise, the
  * behavior is undefined.
  */
-int pauseDownload(Session* session, A2Gid gid, bool force = false);
+EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force = false);
 
 /**
  * @function
@@ -394,7 +417,7 @@ int pauseDownload(Session* session, A2Gid gid, bool force = false);
  * makes the download eligible to restart. This function returns 0 if
  * it succeeds, or negative error code.
  */
-int unpauseDownload(Session* session, A2Gid gid);
+EXTERN_C int unpauseDownload(Session* session, A2Gid gid);
 
 /**
  * @function
@@ -428,6 +451,8 @@ int unpauseDownload(Session* session, A2Gid gid);
  */
 int changeOption(Session* session, A2Gid gid, const KeyVals& options);
 
+EXTERN_C int changeOption(Session* session, A2Gid gid, const char** options, int optionCount);
+
 /**
  * @function
  *
@@ -435,6 +460,8 @@ int changeOption(Session* session, A2Gid gid, const KeyVals& options);
  * available, returns empty string.
  */
 const std::string& getGlobalOption(Session* session, const std::string& name);
+
+EXTERN_C int getGlobalOption(Session* session, const char* name, char* options, int optionSize);
 
 /**
  * @function
@@ -444,6 +471,8 @@ const std::string& getGlobalOption(Session* session, const std::string& name);
  * :func:`sessionNew()`, configuration files or API functions.
  */
 KeyVals getGlobalOptions(Session* session);
+
+EXTERN_C int getGlobalOptions(Session* session, char *options, int optionSize);
 
 /**
  * @function
@@ -476,6 +505,8 @@ KeyVals getGlobalOptions(Session* session);
  * This function returns 0 if it succeeds, or negative error code.
  */
 int changeGlobalOption(Session* session, const KeyVals& options);
+
+EXTERN_C int changeGlobalOption(Session* session, const char** options, int optionCount);
 
 /**
  * @struct
@@ -512,6 +543,8 @@ struct GlobalStat {
  * speed.
  */
 GlobalStat getGlobalStat(Session* session);
+
+EXTERN_C void getGlobalStat(Session* session, GlobalStat *stat);
 
 /**
  * @enum
@@ -560,7 +593,7 @@ enum OffsetMode {
  * This function returns the final destination position of this
  * download, or negative error code.
  */
-int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
+EXTERN_C int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
 
 /**
  * @function
@@ -571,7 +604,7 @@ int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
  * calling :func:`run()` function until it returns 0.  This function
  * returns 0 if it succeeds, or negative error code.
  */
-int shutdown(Session* session, bool force = false);
+EXTERN_C int shutdown(Session* session, bool force = false);
 
 /**
  * @enum
@@ -886,6 +919,76 @@ DownloadHandle* getDownloadHandle(Session* session, A2Gid gid);
  * Deallocates the |dh|. Calling this function with ``NULL`` is safe.
  */
 void deleteDownloadHandle(DownloadHandle* dh);
+
+/**
+ * @function
+ * Returns status of this download.
+ */
+EXTERN_C DownloadStatus getDownloadStatus(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the total length of this download in bytes.
+ */
+EXTERN_C int64_t getTotalLength(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the completed length of this download in bytes.
+ */
+EXTERN_C int64_t getCompletedLength(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the uploaded length of this download in bytes.
+ */
+EXTERN_C int getUploadSpeed(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns piece length in bytes.
+ */
+EXTERN_C size_t getPieceLength(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the number of pieces.
+ */
+EXTERN_C int getNumPieces(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the number of peers/servers the client has connected to.
+ */
+EXTERN_C int getConnections(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the last error code occurred in this download. The error
+ * codes are defined in :ref:`exit-status` section of
+ * :manpage:`aria2c(1)`. This value has its meaning only for
+ * stopped/completed downloads.
+ */
+EXTERN_C int getErrorCode(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns download speed of this download measured in bytes/sec.
+ */
+EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the directory to save files.
+ */
+EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
+
+/**
+ * @function
+ * Returns the number of files. The return value is equivalent to
+ * ``DownloadHandle::getFiles().size()``.
+ */
+EXTERN_C int getNumFiles(Session* session, A2Gid gid);
 
 } // namespace aria2
 
