@@ -1,5 +1,6 @@
 aria2导出C++接口, 提供动态调用。
 
+`
 EXTERN_C int libraryInit();
 EXTERN_C int libraryDeinit();
 EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, 
@@ -32,7 +33,7 @@ EXTERN_C int getErrorCode(Session* session, A2Gid gid);
 EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid);
 EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
 EXTERN_C int getNumFiles(Session* session, A2Gid gid);
-
+`
 
 # Thanks
 
