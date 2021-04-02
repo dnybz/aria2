@@ -3,7 +3,7 @@ aria2导出C++接口, 提供动态调用。
 
 * EXTERN_C int libraryInit();
 * EXTERN_C int libraryDeinit();
-* EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, 
+* EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, bool useSignalHandler, DownloadEventCallback downloadEventCallback, void* userData);
 * EXTERN_C int sessionFinal(Session* session);
 * EXTERN_C int run(Session* session, RUN_MODE mode);
 * EXTERN_C void gidToHex(A2Gid gid, char* hex);
