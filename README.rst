@@ -37,7 +37,8 @@ EXTERN_C int getNumFiles(Session* session, A2Gid gid);
 
 # Thanks
 
-Thanks for [aria2], Jash jashking https://github.com/jashking/aria2
+Thanks for `aria2 <https://github.com/aria2/aria2>`,  `Jash jashking
+<https://github.com/jashking/aria2>`
 
 
 aria2 - The ultra fast download utility
