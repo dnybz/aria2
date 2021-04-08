@@ -1136,7 +1136,7 @@ EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid)
   return downloadSpeed;
 }
 
-EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir)
+EXTERN_C int getDir(Session* session, A2Gid gid, char *saveDir)
 {
   DownloadHandle *dlhandle = getDownloadHandle(session, gid);
   std::string dir = dlhandle ? dlhandle->getDir() : 0;
@@ -1144,7 +1144,11 @@ EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir)
     deleteDownloadHandle(dlhandle);
   }
 
-  if(saveDir && !dir.empty()) {
+  if(nullptr == saveDir) {
+    return dir.size();
+  }
+
+  if(!dir.empty()) {
     strncpy(saveDir, dir.c_str(), dir.size());
   }
 }
@@ -1157,6 +1161,21 @@ EXTERN_C int getNumFiles(Session* session, A2Gid gid)
     deleteDownloadHandle(dlhandle);
   }
   return numFiles;
+}
+
+EXTERN_C int getFilePath(Session* session, A2Gid gid, int index, char *filePath)
+{
+  DownloadHandle *dlhandle = getDownloadHandle(session, gid);
+  FileData data = dlhandle->getFile(index);
+  if(dlhandle) {
+    deleteDownloadHandle(dlhandle);
+  }
+
+  if(nullptr == filePath) {
+    return data.path.size();
+  }
+
+  strncpy(filePath, data.path.c_str(), data.path.size());
 }
 
 } // namespace aria2

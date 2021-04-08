@@ -979,9 +979,10 @@ EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid);
 
 /**
  * @function
- * Returns the directory to save files.
+ * Returns the directory buf size.
+ * saveDir directory buffer.
  */
-EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
+EXTERN_C int getDir(Session* session, A2Gid gid, char *saveDir);
 
 /**
  * @function
@@ -989,6 +990,13 @@ EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
  * ``DownloadHandle::getFiles().size()``.
  */
 EXTERN_C int getNumFiles(Session* session, A2Gid gid);
+
+/**
+ * @function
+ * Returns the save file path size.
+ * filePath file path buffer
+ */
+EXTERN_C int getFilePath(Session* session, A2Gid gid, int index, char *filePath);
 
 } // namespace aria2
 
