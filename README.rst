@@ -1,42 +1,46 @@
 aria2导出C++接口, 提供动态调用。
+=======================================
 
-EXTERN_C int libraryInit();
-EXTERN_C int libraryDeinit();
-EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, 
-EXTERN_C int sessionFinal(Session* session);
-EXTERN_C int run(Session* session, RUN_MODE mode);
-EXTERN_C void gidToHex(A2Gid gid, char* hex);
-EXTERN_C A2Gid hexToGid(const char* hex);
-EXTERN_C bool isNull(A2Gid gid);
-EXTERN_C int addUri(Session* session, A2Gid* gid, const char** uris, int uriCount, const char** options, int optionCount, int position = -1);
-EXTERN_C int addTorrent(Session* session, A2Gid* gid, const char* torrentFile,
-EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count);
-EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force = false);
-EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force = false);
-EXTERN_C int unpauseDownload(Session* session, A2Gid gid);
-EXTERN_C int changeOption(Session* session, A2Gid gid, const char** options, int optionCount);
-EXTERN_C int getGlobalOption(Session* session, const char* name, char* options, int optionSize);
-EXTERN_C int getGlobalOptions(Session* session, char *options, int optionSize);
-EXTERN_C int changeGlobalOption(Session* session, const char** options, int optionCount);
-EXTERN_C void getGlobalStat(Session* session, GlobalStat *stat);
-EXTERN_C int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
-EXTERN_C int shutdown(Session* session, bool force = false);
-EXTERN_C DownloadStatus getDownloadStatus(Session* session, A2Gid gid);
-EXTERN_C int64_t getTotalLength(Session* session, A2Gid gid);
-EXTERN_C int64_t getCompletedLength(Session* session, A2Gid gid);
-EXTERN_C int getUploadSpeed(Session* session, A2Gid gid);
-EXTERN_C size_t getPieceLength(Session* session, A2Gid gid);
-EXTERN_C int getNumPieces(Session* session, A2Gid gid);
-EXTERN_C int getConnections(Session* session, A2Gid gid);
-EXTERN_C int getErrorCode(Session* session, A2Gid gid);
-EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid);
-EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
-EXTERN_C int getNumFiles(Session* session, A2Gid gid);
-
+* EXTERN_C int libraryInit();
+* EXTERN_C int libraryDeinit();
+* EXTERN_C Session* sessionNew(const char** options, int optionCount, bool keepRunning, bool useSignalHandler, DownloadEventCallback downloadEventCallback, void* userData);
+* EXTERN_C int sessionFinal(Session* session);
+* EXTERN_C int run(Session* session, RUN_MODE mode);
+* EXTERN_C void gidToHex(A2Gid gid, char* hex);
+* EXTERN_C A2Gid hexToGid(const char* hex);
+* EXTERN_C bool isNull(A2Gid gid);
+* EXTERN_C int addUri(Session* session, A2Gid* gid, const char** uris, int uriCount, const char** options, int optionCount, int position = -1);
+* EXTERN_C int addTorrent(Session* session, A2Gid* gid, const char* torrentFile,
+* EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count);
+* EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force = false);
+* EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force = false);
+* EXTERN_C int unpauseDownload(Session* session, A2Gid gid);
+* EXTERN_C int changeOption(Session* session, A2Gid gid, const char** options, int optionCount);
+* EXTERN_C int getGlobalOption(Session* session, const char* name, char* options, int optionSize);
+* EXTERN_C int getGlobalOptions(Session* session, char *options, int optionSize);
+* EXTERN_C int changeGlobalOption(Session* session, const char** options, int optionCount);
+* EXTERN_C void getGlobalStat(Session* session, GlobalStat *stat);
+* EXTERN_C int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
+* EXTERN_C int shutdown(Session* session, bool force = false);
+* EXTERN_C DownloadStatus getDownloadStatus(Session* session, A2Gid gid);
+* EXTERN_C int64_t getTotalLength(Session* session, A2Gid gid);
+* EXTERN_C int64_t getCompletedLength(Session* session, A2Gid gid);
+* EXTERN_C int getUploadSpeed(Session* session, A2Gid gid);
+* EXTERN_C size_t getPieceLength(Session* session, A2Gid gid);
+* EXTERN_C int getNumPieces(Session* session, A2Gid gid);
+* EXTERN_C int getConnections(Session* session, A2Gid gid);
+* EXTERN_C int getErrorCode(Session* session, A2Gid gid);
+* EXTERN_C int getDownloadSpeed(Session* session, A2Gid gid);
+* EXTERN_C void getDir(Session* session, A2Gid gid, char *saveDir);
+* EXTERN_C int getNumFiles(Session* session, A2Gid gid);
 
 # Thanks
+------------
 
-Thanks for [aria2], Jash jashking https://github.com/jashking/aria2
+Thanks for `aria2 <https://github.com/aria2/aria2>`,  `Jash jashking
+<https://github.com/jashking/aria2>`
+
+
 
 
 aria2 - The ultra fast download utility
