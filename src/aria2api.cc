@@ -692,6 +692,53 @@ EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count)
   return actives.size();
 }
 
+std::vector<A2Gid> getWaitingDownload(Session* session) {
+  auto& e = session->context->reqinfo->getDownloadEngine();
+  const RequestGroupList& groups = e->getRequestGroupMan()->getReservedGroups();
+  std::vector<A2Gid> res;
+  for (const auto& group : groups) {
+    res.push_back(group->getGID());
+  }
+  return res;
+}
+
+EXTERN_C int getWaitingDownload(Session* session, A2Gid* gids, int count)
+{
+  std::vector<A2Gid> actives = getWaitingDownload(session);
+  if(nullptr == gids || !count) {
+    return actives.size();
+  }
+  for(uint32_t i = 0; i < count && i < actives.size() ; i++) {
+    gids[i] = actives[i];
+  }
+
+  return actives.size();
+}
+
+std::vector<A2Gid> getStoppedDownload(Session* session)
+{
+  auto& e = session->context->reqinfo->getDownloadEngine();
+  const RequestGroupList& groups = e->getRequestGroupMan()->getDownloadResults();
+  std::vector<A2Gid> res;
+  for (const auto& group : groups) {
+    res.push_back(group->getGID());
+  }
+  return res;
+}
+
+EXTERN_C int getStoppedDownload(Session* session, A2Gid* gids, int count)
+{
+  std::vector<A2Gid> actives = getStoppedDownload(session);
+  if(nullptr == gids || !count) {
+    return actives.size();
+  }
+  for(uint32_t i = 0; i < count && i < actives.size() ; i++) {
+    gids[i] = actives[i];
+  }
+
+  return actives.size();
+}
+
 namespace {
 template <typename OutputIterator, typename InputIterator>
 void createUriEntry(OutputIterator out, InputIterator first, InputIterator last,

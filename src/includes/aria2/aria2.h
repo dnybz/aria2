@@ -380,6 +380,24 @@ EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count);
 /**
  * @function
  *
+ * Returns the array of Waiting download GID.
+ */
+std::vector<A2Gid> getWaitingDownload(Session* session);
+
+EXTERN_C int getWaitingDownload(Session* session, A2Gid* gids, int count);
+
+/**
+ * @function
+ *
+ * Returns the array of Stopped download GID.
+ */
+std::vector<A2Gid> getStoppedDownload(Session* session);
+
+EXTERN_C int getStoppedDownload(Session* session, A2Gid* gids, int count);
+
+/**
+ * @function
+ *
  * Removes the download denoted by the |gid|. If the specified
  * download is in progress, it is stopped at first. The status of
  * removed download becomes :c:macro:`DOWNLOAD_REMOVED`. If the
