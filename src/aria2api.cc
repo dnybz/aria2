@@ -470,6 +470,16 @@ EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force)
   return 0;
 }
 
+EXTERN_C int removeDownloadResult(Session* session, A2Gid gid)
+{
+  auto& e = session->context->reqinfo->getDownloadEngine();
+  if (!e->getRequestGroupMan()->removeDownloadResult(gid)) {
+    return -1;
+  }
+
+  return 0;
+}
+
 EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();

@@ -13,6 +13,7 @@ aria2导出C++接口, 提供动态调用。
 * EXTERN_C int addTorrent(Session* session, A2Gid* gid, const char* torrentFile,
 * EXTERN_C int getActiveDownload(Session* session, A2Gid* gids, int count);
 * EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force = false);
+* EXTERN_C int removeDownloadResult(Session* session, A2Gid gid);
 * EXTERN_C int pauseDownload(Session* session, A2Gid gid, bool force = false);
 * EXTERN_C int unpauseDownload(Session* session, A2Gid gid);
 * EXTERN_C int changeOption(Session* session, A2Gid gid, const char** options, int optionCount);

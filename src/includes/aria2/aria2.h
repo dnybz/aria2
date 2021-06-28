@@ -409,6 +409,13 @@ EXTERN_C int removeDownload(Session* session, A2Gid gid, bool force = false);
 
 /**
  * @function
+ * Removes download result of given gid. Returns 0 if download
+ * result was removed. Otherwise returns -1.
+ */
+EXTERN_C int removeDownloadResult(Session* session, A2Gid gid);
+
+/**
+ * @function
  *
  * Pauses the download denoted by the |gid|. The status of paused
  * download becomes :c:macro:`DOWNLOAD_PAUSED`. If the download is
