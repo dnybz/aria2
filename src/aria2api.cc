@@ -728,10 +728,10 @@ EXTERN_C int getWaitingDownload(Session* session, A2Gid* gids, int count)
 std::vector<A2Gid> getStoppedDownload(Session* session)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
-  const RequestGroupList& groups = e->getRequestGroupMan()->getDownloadResults();
+  const DownloadResultList& results = e->getRequestGroupMan()->getDownloadResults();
   std::vector<A2Gid> res;
-  for (const auto& group : groups) {
-    res.push_back(group->getGID());
+  for (const auto& result : results) {
+    res.push_back(result->gid->getNumericId());
   }
   return res;
 }
